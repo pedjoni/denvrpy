@@ -8,11 +8,11 @@ from pytest_httpserver.httpserver import UNDEFINED
 
 from denvr.config import Config
 from denvr.session import Session
-from denvr.api.v1.vpcs import Client
+from denvr.api.v1.servers.snapshots import Client
 from denvr.validate import validate_kwargs
 
 
-def test_get_vpcs():
+def test_get_snapshots():
     """
     Unit test default input/output behaviour when mocking the internal Session object.
     """
@@ -22,20 +22,22 @@ def test_get_vpcs():
     session.config = config
     client = Client(session)
 
-    client.get_vpcs()
+    client.get_snapshots()
 
-    client_kwargs: Dict[str, Any] = {"cluster": "cluster"}
+    client_kwargs: Dict[str, Any] = {"cluster": "Cluster"}
 
     request_kwargs = validate_kwargs(
-        "get", "/api/v1/vpcs/GetVpcs", {"params": {"cluster": "cluster"}}, {}
+        "get", "/api/v1/servers/snapshots/GetSnapshots", {"params": {"Cluster": "Cluster"}}, {}
     )
 
-    client.get_vpcs(**client_kwargs)
+    client.get_snapshots(**client_kwargs)
 
-    session.request.assert_called_with("get", "/api/v1/vpcs/GetVpcs", **request_kwargs)
+    session.request.assert_called_with(
+        "get", "/api/v1/servers/snapshots/GetSnapshots", **request_kwargs
+    )
 
 
-def test_get_vpcs_httpserver(httpserver: HTTPServer):
+def test_get_snapshots_httpserver(httpserver: HTTPServer):
     """
     Test we're producing valid session HTTP requests
     """
@@ -44,37 +46,37 @@ def test_get_vpcs_httpserver(httpserver: HTTPServer):
     session = Session(config)
     client = Client(session)
 
-    client_kwargs: Dict[str, Any] = {"cluster": "cluster"}
+    client_kwargs: Dict[str, Any] = {"cluster": "Cluster"}
 
     request_kwargs = validate_kwargs(
-        "get", "/api/v1/vpcs/GetVpcs", {"params": {"cluster": "cluster"}}, {}
+        "get", "/api/v1/servers/snapshots/GetSnapshots", {"params": {"Cluster": "Cluster"}}, {}
     )
 
     # TODO: The request_kwargs response may break if we add schema validation on results.
     httpserver.expect_request(
-        "/api/v1/vpcs/GetVpcs",
+        "/api/v1/servers/snapshots/GetSnapshots",
         method="get",
         query_string=request_kwargs.get("params", None),
         json=request_kwargs.get("json", UNDEFINED),
     ).respond_with_json(request_kwargs)
-    assert client.get_vpcs(**client_kwargs) == request_kwargs
+    assert client.get_snapshots(**client_kwargs) == request_kwargs
 
 
 @pytest.mark.integration
-def test_get_vpcs_mockserver(mock_config):
+def test_get_snapshots_mockserver(mock_config):
     """
     Test our requests/responses match the open api spec with mockserver.
     """
     session = Session(mock_config)
     client = Client(session)
 
-    client_kwargs: Dict[str, Any] = {"cluster": "cluster"}
+    client_kwargs: Dict[str, Any] = {"cluster": "Cluster"}
 
-    client.get_vpcs(**client_kwargs)
+    client.get_snapshots(**client_kwargs)
     # TODO: Test return type once we add support for that in our genapi script.
 
 
-def test_get_vpc():
+def test_get_snapshot():
     """
     Unit test default input/output behaviour when mocking the internal Session object.
     """
@@ -85,27 +87,29 @@ def test_get_vpc():
     client = Client(session)
 
     # Check that missing required arguments without a default should through a TypeError
-    if any(getattr(config, k, None) is None for k in ["Id", "Cluster"]):
+    if any(getattr(config, k, None) is None for k in ["Id", "Namespace", "Cluster"]):
         with pytest.raises(TypeError, match=r"^Required"):
-            client.get_vpc()
+            client.get_snapshot()
     else:
-        client.get_vpc()
+        client.get_snapshot()
 
-    client_kwargs: Dict[str, Any] = {"id": "Id", "cluster": "Msc1"}
+    client_kwargs: Dict[str, Any] = {"id": "Id", "namespace": "Namespace", "cluster": "Cluster"}
 
     request_kwargs = validate_kwargs(
         "get",
-        "/api/v1/vpcs/GetVpc",
-        {"params": {"Id": "Id", "Cluster": "Msc1"}},
-        {"Id", "Cluster"},
+        "/api/v1/servers/snapshots/GetSnapshot",
+        {"params": {"Id": "Id", "Namespace": "Namespace", "Cluster": "Cluster"}},
+        {"Id", "Namespace", "Cluster"},
     )
 
-    client.get_vpc(**client_kwargs)
+    client.get_snapshot(**client_kwargs)
 
-    session.request.assert_called_with("get", "/api/v1/vpcs/GetVpc", **request_kwargs)
+    session.request.assert_called_with(
+        "get", "/api/v1/servers/snapshots/GetSnapshot", **request_kwargs
+    )
 
 
-def test_get_vpc_httpserver(httpserver: HTTPServer):
+def test_get_snapshot_httpserver(httpserver: HTTPServer):
     """
     Test we're producing valid session HTTP requests
     """
@@ -114,40 +118,40 @@ def test_get_vpc_httpserver(httpserver: HTTPServer):
     session = Session(config)
     client = Client(session)
 
-    client_kwargs: Dict[str, Any] = {"id": "Id", "cluster": "Msc1"}
+    client_kwargs: Dict[str, Any] = {"id": "Id", "namespace": "Namespace", "cluster": "Cluster"}
 
     request_kwargs = validate_kwargs(
         "get",
-        "/api/v1/vpcs/GetVpc",
-        {"params": {"Id": "Id", "Cluster": "Msc1"}},
-        {"Id", "Cluster"},
+        "/api/v1/servers/snapshots/GetSnapshot",
+        {"params": {"Id": "Id", "Namespace": "Namespace", "Cluster": "Cluster"}},
+        {"Id", "Namespace", "Cluster"},
     )
 
     # TODO: The request_kwargs response may break if we add schema validation on results.
     httpserver.expect_request(
-        "/api/v1/vpcs/GetVpc",
+        "/api/v1/servers/snapshots/GetSnapshot",
         method="get",
         query_string=request_kwargs.get("params", None),
         json=request_kwargs.get("json", UNDEFINED),
     ).respond_with_json(request_kwargs)
-    assert client.get_vpc(**client_kwargs) == request_kwargs
+    assert client.get_snapshot(**client_kwargs) == request_kwargs
 
 
 @pytest.mark.integration
-def test_get_vpc_mockserver(mock_config):
+def test_get_snapshot_mockserver(mock_config):
     """
     Test our requests/responses match the open api spec with mockserver.
     """
     session = Session(mock_config)
     client = Client(session)
 
-    client_kwargs: Dict[str, Any] = {"id": "Id", "cluster": "Msc1"}
+    client_kwargs: Dict[str, Any] = {"id": "Id", "namespace": "Namespace", "cluster": "Cluster"}
 
-    client.get_vpc(**client_kwargs)
+    client.get_snapshot(**client_kwargs)
     # TODO: Test return type once we add support for that in our genapi script.
 
 
-def test_create_vpc():
+def test_create_snapshot():
     """
     Unit test default input/output behaviour when mocking the internal Session object.
     """
@@ -158,39 +162,41 @@ def test_create_vpc():
     client = Client(session)
 
     # Check that missing required arguments without a default should through a TypeError
-    if any(getattr(config, k, None) is None for k in ["cluster", "name"]):
+    if any(getattr(config, k, None) is None for k in ["cluster", "namespace"]):
         with pytest.raises(TypeError, match=r"^Required"):
-            client.create_vpc()
+            client.create_snapshot()
     else:
-        client.create_vpc()
+        client.create_snapshot()
 
     client_kwargs: Dict[str, Any] = {
         "name": "string",
-        "block_intra_vpc_comms": False,
-        "is_default": False,
-        "cluster": "Msc1",
+        "namespace": "string",
+        "cluster": "string",
+        "source_v_m_name": "string",
     }
 
     request_kwargs = validate_kwargs(
         "post",
-        "/api/v1/vpcs/CreateVpc",
+        "/api/v1/servers/snapshots/CreateSnapshot",
         {
             "json": {
                 "name": "string",
-                "blockIntraVpcComms": False,
-                "isDefault": False,
-                "cluster": "Msc1",
+                "namespace": "string",
+                "cluster": "string",
+                "sourceVMName": "string",
             }
         },
-        {"cluster", "name"},
+        {"cluster", "namespace"},
     )
 
-    client.create_vpc(**client_kwargs)
+    client.create_snapshot(**client_kwargs)
 
-    session.request.assert_called_with("post", "/api/v1/vpcs/CreateVpc", **request_kwargs)
+    session.request.assert_called_with(
+        "post", "/api/v1/servers/snapshots/CreateSnapshot", **request_kwargs
+    )
 
 
-def test_create_vpc_httpserver(httpserver: HTTPServer):
+def test_create_snapshot_httpserver(httpserver: HTTPServer):
     """
     Test we're producing valid session HTTP requests
     """
@@ -201,37 +207,37 @@ def test_create_vpc_httpserver(httpserver: HTTPServer):
 
     client_kwargs: Dict[str, Any] = {
         "name": "string",
-        "block_intra_vpc_comms": False,
-        "is_default": False,
-        "cluster": "Msc1",
+        "namespace": "string",
+        "cluster": "string",
+        "source_v_m_name": "string",
     }
 
     request_kwargs = validate_kwargs(
         "post",
-        "/api/v1/vpcs/CreateVpc",
+        "/api/v1/servers/snapshots/CreateSnapshot",
         {
             "json": {
                 "name": "string",
-                "blockIntraVpcComms": False,
-                "isDefault": False,
-                "cluster": "Msc1",
+                "namespace": "string",
+                "cluster": "string",
+                "sourceVMName": "string",
             }
         },
-        {"cluster", "name"},
+        {"cluster", "namespace"},
     )
 
     # TODO: The request_kwargs response may break if we add schema validation on results.
     httpserver.expect_request(
-        "/api/v1/vpcs/CreateVpc",
+        "/api/v1/servers/snapshots/CreateSnapshot",
         method="post",
         query_string=request_kwargs.get("params", None),
         json=request_kwargs.get("json", UNDEFINED),
     ).respond_with_json(request_kwargs)
-    assert client.create_vpc(**client_kwargs) == request_kwargs
+    assert client.create_snapshot(**client_kwargs) == request_kwargs
 
 
 @pytest.mark.integration
-def test_create_vpc_mockserver(mock_config):
+def test_create_snapshot_mockserver(mock_config):
     """
     Test our requests/responses match the open api spec with mockserver.
     """
@@ -240,16 +246,16 @@ def test_create_vpc_mockserver(mock_config):
 
     client_kwargs: Dict[str, Any] = {
         "name": "string",
-        "block_intra_vpc_comms": False,
-        "is_default": False,
-        "cluster": "Msc1",
+        "namespace": "string",
+        "cluster": "string",
+        "source_v_m_name": "string",
     }
 
-    client.create_vpc(**client_kwargs)
+    client.create_snapshot(**client_kwargs)
     # TODO: Test return type once we add support for that in our genapi script.
 
 
-def test_destroy_vpc():
+def test_delete_snapshot():
     """
     Unit test default input/output behaviour when mocking the internal Session object.
     """
@@ -260,27 +266,29 @@ def test_destroy_vpc():
     client = Client(session)
 
     # Check that missing required arguments without a default should through a TypeError
-    if any(getattr(config, k, None) is None for k in ["Id", "Cluster"]):
+    if any(getattr(config, k, None) is None for k in ["Id", "Namespace", "Cluster"]):
         with pytest.raises(TypeError, match=r"^Required"):
-            client.destroy_vpc()
+            client.delete_snapshot()
     else:
-        client.destroy_vpc()
+        client.delete_snapshot()
 
-    client_kwargs: Dict[str, Any] = {"id": "Id", "cluster": "Msc1"}
+    client_kwargs: Dict[str, Any] = {"id": "Id", "namespace": "Namespace", "cluster": "Cluster"}
 
     request_kwargs = validate_kwargs(
         "delete",
-        "/api/v1/vpcs/DestroyVpc",
-        {"params": {"Id": "Id", "Cluster": "Msc1"}},
-        {"Id", "Cluster"},
+        "/api/v1/servers/snapshots/DeleteSnapshot",
+        {"params": {"Id": "Id", "Namespace": "Namespace", "Cluster": "Cluster"}},
+        {"Id", "Namespace", "Cluster"},
     )
 
-    client.destroy_vpc(**client_kwargs)
+    client.delete_snapshot(**client_kwargs)
 
-    session.request.assert_called_with("delete", "/api/v1/vpcs/DestroyVpc", **request_kwargs)
+    session.request.assert_called_with(
+        "delete", "/api/v1/servers/snapshots/DeleteSnapshot", **request_kwargs
+    )
 
 
-def test_destroy_vpc_httpserver(httpserver: HTTPServer):
+def test_delete_snapshot_httpserver(httpserver: HTTPServer):
     """
     Test we're producing valid session HTTP requests
     """
@@ -289,34 +297,34 @@ def test_destroy_vpc_httpserver(httpserver: HTTPServer):
     session = Session(config)
     client = Client(session)
 
-    client_kwargs: Dict[str, Any] = {"id": "Id", "cluster": "Msc1"}
+    client_kwargs: Dict[str, Any] = {"id": "Id", "namespace": "Namespace", "cluster": "Cluster"}
 
     request_kwargs = validate_kwargs(
         "delete",
-        "/api/v1/vpcs/DestroyVpc",
-        {"params": {"Id": "Id", "Cluster": "Msc1"}},
-        {"Id", "Cluster"},
+        "/api/v1/servers/snapshots/DeleteSnapshot",
+        {"params": {"Id": "Id", "Namespace": "Namespace", "Cluster": "Cluster"}},
+        {"Id", "Namespace", "Cluster"},
     )
 
     # TODO: The request_kwargs response may break if we add schema validation on results.
     httpserver.expect_request(
-        "/api/v1/vpcs/DestroyVpc",
+        "/api/v1/servers/snapshots/DeleteSnapshot",
         method="delete",
         query_string=request_kwargs.get("params", None),
         json=request_kwargs.get("json", UNDEFINED),
     ).respond_with_json(request_kwargs)
-    assert client.destroy_vpc(**client_kwargs) == request_kwargs
+    assert client.delete_snapshot(**client_kwargs) == request_kwargs
 
 
 @pytest.mark.integration
-def test_destroy_vpc_mockserver(mock_config):
+def test_delete_snapshot_mockserver(mock_config):
     """
     Test our requests/responses match the open api spec with mockserver.
     """
     session = Session(mock_config)
     client = Client(session)
 
-    client_kwargs: Dict[str, Any] = {"id": "Id", "cluster": "Msc1"}
+    client_kwargs: Dict[str, Any] = {"id": "Id", "namespace": "Namespace", "cluster": "Cluster"}
 
-    client.destroy_vpc(**client_kwargs)
+    client.delete_snapshot(**client_kwargs)
     # TODO: Test return type once we add support for that in our genapi script.
